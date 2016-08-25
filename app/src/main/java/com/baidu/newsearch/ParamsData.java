@@ -11,7 +11,8 @@ public class ParamsData {
         public static final String SIGN = "sign";
         public static final String METHOD = "method";
         public static final String LOCATION = "location";
-        public static final String CITY_ID = "city_id";
+        public static final String CITY_ID = "cityid";
+        public static final String LOG_ID = "log_id";
     }
 
     public static class ParamsDefaultValue{
