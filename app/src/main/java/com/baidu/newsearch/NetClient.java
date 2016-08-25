@@ -5,6 +5,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -78,69 +79,103 @@ public class NetClient {
 
 
     public void getNetData(){
-        OkHttpClient mOkHttpClient = new OkHttpClient();
-//        mOkHttpClient.setConnectTimeout(30, TimeUnit.SECONDS);
-//        mOkHttpClient.setReadTimeout(30, TimeUnit.SECONDS);
-        Request request = null;
-        Call call = null;
+        try{
+            OkHttpClient mOkHttpClient = new OkHttpClient();
+            Request request = null;
+            Call call = null;
 
 
-        if(requestType == TYPE_GET){
+            if(requestType == TYPE_GET){
 
-            Request.Builder builder = new Request.Builder();
-            builder.url(requestUrl);
-            builder.header("Content-Type", "text/html; charset=utf-8");
-            //add headers & cookies
-            request = builder.build();
+                Request.Builder builder = new Request.Builder();
+
+                builder.header("Content-Type", "text/html; charset=utf-8");
+                StringBuilder sb = null;
 
 
-        }else{
-            FormBody.Builder builder = new FormBody.Builder();
-            if(mParams != null && mParams.size() > 0){
-                Iterator<Map.Entry<String, String>> iterator = mParams.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<String, String> entry = iterator.next();
-                    builder.add(entry.getKey(),entry.getValue());
-                }
+                if(mParams != null && mParams.size() > 0){
+                    sb = new StringBuilder();
+                    int size = mParams.size();
+                    int i = 0;
+                    Iterator<Map.Entry<String, String>> iterator = mParams.entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry<String, String> entry = iterator.next();
+                        if(i > 0){
+                            sb.append("&");
+                        }
+                        sb.append(String.format("%s=%s", entry.getKey(), URLEncoder.encode(entry.getValue(), "utf-8")));
+//                    sb.append(entry.getKey());
+//                    sb.append("=");
+//                    sb.append(entry.getValue());
 
-            }
-
-            RequestBody body = builder.build();
-
-            //add headers & cookies
-
-            request = new Request.Builder().url(requestUrl).post(body).build();
-
-        }
-        call = mOkHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                if(mNetListener != null){
-                    mNetListener.onError(-1,"error!");
-                }
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response == null){
-                    //完蛋了
-                }else{
-
-                    String str = response.body().toString();
-                    Log.i("melon",""+ str);
-                    if(mNetListener != null){
-                        mNetListener.onSuccess(0,"",null);
+                        i++;
                     }
 
                 }
-            }
+                if(sb != null){
 
-        });
+                }
+
+                builder.url(requestUrl);
+                //add headers & cookies
+                request = builder.build();
+
+
+            }else{
+                FormBody.Builder builder = new FormBody.Builder();
+                if(mParams != null && mParams.size() > 0){
+                    Iterator<Map.Entry<String, String>> iterator = mParams.entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry<String, String> entry = iterator.next();
+                        builder.add(entry.getKey(),entry.getValue());
+                    }
+
+                }
+
+                RequestBody body = builder.build();
+
+                //add headers & cookies
+
+                request = new Request.Builder().url(requestUrl).post(body).build();
+
+            }
+            call = mOkHttpClient.newCall(request);
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    if(mNetListener != null){
+                        mNetListener.onError(-1,"error!");
+                    }
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if(response == null){
+                        //完蛋了
+                    }else{
+
+                        String str = response.body().toString();
+                        Log.i("melon",""+ str);
+                        if(mNetListener != null){
+                            mNetListener.onSuccess(0,"",null);
+                        }
+
+                    }
+                }
+
+            });
+
+        }catch (Throwable th){
+            th.printStackTrace();
+        }
 
 
     }
 
+    private String getParamsStr(){
+        String params = null;
+        return params;
+    }
 
     public interface INetlistener {
         void onSuccess(int errorCode , String errStr,JSONObject jsonData);
